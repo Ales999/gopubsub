@@ -30,28 +30,35 @@ func CreateNewSubscriber() (string, *Subscriber) {
 		active:   true,
 	}
 }
+
+// AddTopic - Add topic to the subscriber
 func (s *Subscriber) AddTopic(topic string) {
 	// add topic to the subscriber
 	s.mutex.RLock()
 	defer s.mutex.RUnlock()
 	s.topics[topic] = true
 }
+
+// RemoveTopic - remove topic to the subscriber
 func (s *Subscriber) RemoveTopic(topic string) {
 	// remove topic to the subscriber
 	s.mutex.RLock()
 	defer s.mutex.RUnlock()
 	delete(s.topics, topic)
 }
+
+// GetTopics - Get all topic of the subscriber
 func (s *Subscriber) GetTopics() []string {
 	// Get all topic of the subscriber
 	s.mutex.RLock()
 	defer s.mutex.RUnlock()
 	topics := []string{}
-	for topic, _ := range s.topics {
+	for topic := range s.topics {
 		topics = append(topics, topic)
 	}
 	return topics
 }
+
 func (s *Subscriber) Destruct() {
 	// destructor for subscriber.
 	s.mutex.RLock()
@@ -59,6 +66,7 @@ func (s *Subscriber) Destruct() {
 	s.active = false
 	close(s.messages)
 }
+
 func (s *Subscriber) Signal(msg *Message) {
 	// Gets the message from the channel
 	s.mutex.RLock()
@@ -67,6 +75,7 @@ func (s *Subscriber) Signal(msg *Message) {
 		s.messages <- msg
 	}
 }
+
 func (s *Subscriber) Listen() {
 	// Listens to the message channel, prints once received.
 	for {

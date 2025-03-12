@@ -16,6 +16,7 @@ var availableTopics = map[string]string{
 	"SOL": "SOLANA",
 }
 
+// Pseudo generate data for all topic
 func pricePublisher(broker *pubsub.Broker) {
 	topicKeys := make([]string, 0, len(availableTopics))
 	topicValues := make([]string, 0, len(availableTopics))
@@ -23,10 +24,13 @@ func pricePublisher(broker *pubsub.Broker) {
 		topicKeys = append(topicKeys, k)
 		topicValues = append(topicValues, v)
 	}
+	//
 	for {
 		randValue := topicValues[rand.Intn(len(topicValues))] // all topic values.
 		msg := fmt.Sprintf("%f", rand.Float64())
-		// fmt.Printf("Publishing %s to %s topic\n", msg, randKey)
+
+		fmt.Printf("Publishing %s to %s topic\n", msg, topicKeys)
+
 		go broker.Publish(randValue, msg)
 		// Uncomment if you want to broadcast to all topics.
 		// go broker.Broadcast(msg, topicValues)
@@ -48,30 +52,36 @@ func main() {
 	// subscribe ETH and SOL to s2.
 	broker.Subscribe(s2, availableTopics["ETH"])
 	broker.Subscribe(s2, availableTopics["SOL"])
+
 	go (func() {
-		// sleep for 5 sec, and then subscribe for topic DOT for s2
+		// sleep for 3 sec, and then subscribe for topic DOT for s2
 		time.Sleep(3 * time.Second)
 		broker.Subscribe(s2, availableTopics["DOT"])
 	})()
+
 	go (func() {
-		// s;eep for 5 sec, and then unsubscribe for topic SOL for s2
+		// sleep for 5 sec, and then unsubscribe for topic SOL for s2
 		time.Sleep(5 * time.Second)
 		broker.Unsubscribe(s2, availableTopics["SOL"])
 		fmt.Printf("Total subscribers for topic ETH is %v\n", broker.GetSubscribers(availableTopics["ETH"]))
 	})()
 
 	go (func() {
-		// s;eep for 5 sec, and then unsubscribe for topic SOL for s2
+		// sleep for 10 sec, and then unsubscribe for topic SOL for s2
 		time.Sleep(10 * time.Second)
 		broker.RemoveSubscriber(s2)
 		fmt.Printf("Total subscribers for topic ETH is %v\n", broker.GetSubscribers(availableTopics["ETH"]))
 	})()
+
 	// Concurrently publish the values.
 	go pricePublisher(broker)
+
 	// Concurrently listens from s1.
 	go s1.Listen()
+
 	// Concurrently listens from s2.
 	go s2.Listen()
+
 	// to prevent terminate
 	fmt.Scanln()
 	fmt.Println("Done!")
